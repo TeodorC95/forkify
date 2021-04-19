@@ -1,4 +1,5 @@
 import * as model from "./model.js";
+import { MODAL_CLOSE_SEC } from "./config.js";
 import recipeView from "./views/recipeView.js";
 import searchView from "./views/searchView.js";
 import resultsView from "./views/resultsView.js";
@@ -8,6 +9,7 @@ import addRecipeView from "./views/addRecipeView.js";
 
 import "core-js/stable";
 import "regenerator-runtime/runtime";
+// import { from } from "core-js/core/array";
 
 if (module.hot) {
   module.hot.accept();
@@ -87,10 +89,34 @@ const controlBookmarks = function () {
   bookmarksView.render(model.state.bookmarks);
 };
 
-const controlAddRecipe = function (newRecipe) {
-  console.log(newRecipe);
+const controlAddRecipe = async function (newRecipe) {
+  try {
+    // show spinner
+    addRecipeView.renderSpinner();
 
-  // upload new recipe data
+    // upload new recipe data
+    await model.uploadRecipe(newRecipe);
+
+    // render recipe
+    recipeView.render(model.state.recipe);
+
+    // success message
+    addRecipeView.renderMessage();
+
+    // render bookmark view
+    bookmarksView.render(model.state.bookmars);
+
+    // change id in url
+    window.history.pushState(null, "", `#${model.state.recipe.id}`);
+
+    // close form window
+    setTimeout(function () {
+      addRecipeView;
+    }, MODAL_CLOSE_SEC * 1000);
+  } catch (error) {
+    console.log(`${error} 😿😿😿`);
+    addRecipeView.renderError(error.message);
+  }
 };
 
 const init = function () {
